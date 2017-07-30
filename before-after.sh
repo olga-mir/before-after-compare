@@ -5,6 +5,9 @@ set -e
 
 main() {
 
+ORIG="orig" # dir to store original data
+PROC="proc" # dir to store processed data
+
 while [[ $# -gt 0 ]]; do
   case $1 in
     -s|--setup)
@@ -19,6 +22,9 @@ while [[ $# -gt 0 ]]; do
       ;;
     -l|--label)
       LABEL=$2; shift
+      ;;
+    -d|--directory)
+      REQUESTED_TEST_DIR=$2; shift
       ;;
     -r|--report)
       REPORT=1
@@ -38,9 +44,29 @@ done
 
 if [[ $SETUP -eq 1 ]]; then
   setup
+  exit
 fi
 
-} # end fictious 'main', trick that allows to simulate effect of 'forward function definition'
+if [ -n "$BRANCH2" ]; then
+  # brnach to branch comparision
+  echo "branch"
+fi
+
+if [ -n "$LABEL" ]; then
+  CURR_TEST_DIR=`ls -td vvv* | head -1`
+  echo Found last test dir: $CURR_TEST_DIR
+  echo Running the project
+  eval $RUN_CMD
+  mkdir -p $CURR_TEST_DIR/$ORIG
+  mkdir -p $CURR_TEST_DIR/$ORIG/$LABEL
+  orig_data_dir=$CURR_TEST_DIR/$ORIG/$LABEL
+  echo Now copying output to $orig_data_dir
+  cp -r $DATA_OUTPUT_LOCATION $orig_data_dir
+  echo DONE: data copied to $orig_data_dir
+  exit
+fi
+
+} # end fictitious 'main', trick that allows to simulate effect of 'forward function definition'
 
 setup() {
   R=`date +%s | shasum | base64 | head -c 10 | tr "[:upper:]" "[:lower:]"`

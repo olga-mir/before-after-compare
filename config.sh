@@ -4,7 +4,7 @@
 DATA_OUTPUT_LOCATION="./my_project_output"
 
 # script or command how to run you project e.g. "npm run build 2>&1 | tee run.log"
-RUN_CMD="./run.sh"
+RUN_CMD="./run_my_project.sh"
 
 # how to cleanup your project between the runs
 # if not required provide empty string ""
@@ -16,4 +16,5 @@ CLEANUP_CMD="./cleanup.sh"
 PREPARE_FOR_COMPARE_CMD="./parse.sh"
 
 # test directories start with fixed prefix and randomly generated string
+# Do NOT leave blank
 TEST_DIR_PREFIX="vvv_"
