@@ -42,27 +42,32 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
+CURR_TEST_DIR=""
+
 if [[ $SETUP -eq 1 ]]; then
   setup
   exit
 fi
 
-if [ -n "$BRANCH2" ]; then
-  # brnach to branch comparision
-  echo "branch"
+if [ -n "$LABEL" ]; then
+  set_test_root_dir
+  run_step
+  exit
 fi
 
-if [ -n "$LABEL" ]; then
-  CURR_TEST_DIR=`ls -td vvv* | head -1`
-  echo Found last test dir: $CURR_TEST_DIR
-  echo Running the project
-  eval $RUN_CMD
-  mkdir -p $CURR_TEST_DIR/$ORIG
-  mkdir -p $CURR_TEST_DIR/$ORIG/$LABEL
-  orig_data_dir=$CURR_TEST_DIR/$ORIG/$LABEL
-  echo Now copying output to $orig_data_dir
-  cp -r $DATA_OUTPUT_LOCATION $orig_data_dir
-  echo DONE: data copied to $orig_data_dir
+if [ -n "$BRANCH2" ]; then
+  # brnach to branch comparision
+  set_test_root_dir
+  echo "\n"Running on branch $BRANCH1
+  LABEL=$BRANCH1
+  #git checkout $BRANCH1
+  run_step
+  eval $CLEANUP_CMD
+  echo "\n"Running on branch $BRANCH2
+  LABEL=$BRANCH2
+  #git checkout $BRANCH2
+  run_step
+  #report
   exit
 fi
 
@@ -70,13 +75,45 @@ fi
 
 setup() {
   R=`date +%s | shasum | base64 | head -c 10 | tr "[:upper:]" "[:lower:]"`
-  TEST_ROOT_DIR=$TEST_DIR_PREFIX$R
-  mkdir $TEST_ROOT_DIR
-  echo DONE: Created test directory: $TEST_ROOT_DIR
+  CURR_TEST_DIR=$TEST_DIR_PREFIX$R
+  mkdir $CURR_TEST_DIR
+  echo -setup- Created test directory: $CURR_TEST_DIR
+}
+
+set_test_root_dir() {
+  if [ -z "$REQUESTED_TEST_DIR" ]; then
+    if [ -z "$CURR_TEST_DIR" ]; then
+      if [[ "$(find . -name "$TEST_DIR_PREFIX*" -type d  -print -quit | wc -l)" -lt 1 ]]; then
+        echo No test directories were found setting up new
+        setup
+      else
+        CURR_TEST_DIR=`ls -td $TEST_DIR_PREFIX* | head -1`
+        echo Test directory set to latest: $CURR_TEST_DIR
+      fi
+    fi
+  else
+    CURR_TEST_DIR=$REQUESTED_TEST_DIR
+  fi
+}
+
+run_step() {
+  # Assumes $CURR_TEST_DIR is set
+  if [ -z "$CURR_TEST_DIR" ]; then
+    echo run_step has no valid test directory
+    exit
+  fi
+
+  echo Running the project
+  eval $RUN_CMD
+  mkdir -p $CURR_TEST_DIR/$ORIG
+  mkdir -p $CURR_TEST_DIR/$ORIG/$LABEL
+  orig_data_dir=$CURR_TEST_DIR/$ORIG/$LABEL
+  cp -r $DATA_OUTPUT_LOCATION $orig_data_dir
+  echo DONE: data copied to $orig_data_dir
 }
 
 clean_all_test_dirs() {
-  find . -type d -name "vvv_*" -exec rm -rf {} +
+  find . -type d -name "$TEST_DIR_PREFIX*" -exec rm -rf {} +
   echo DONE: Removed all test directories
 }
 

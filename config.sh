@@ -16,5 +16,5 @@ CLEANUP_CMD="./cleanup.sh"
 PREPARE_FOR_COMPARE_CMD="./parse.sh"
 
 # test directories start with fixed prefix and randomly generated string
-# Do NOT leave blank
+# Do NOT leave blank and unique from other files/directories in project directory
 TEST_DIR_PREFIX="vvv_"
