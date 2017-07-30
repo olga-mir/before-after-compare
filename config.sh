@@ -14,3 +14,6 @@ CLEANUP_CMD="./cleanup.sh"
 # like timestamps, provide a script to strip this data prior to compare
 # if not required provide empty string ""
 PREPARE_FOR_COMPARE_CMD="./parse.sh"
+
+# test directories start with fixed prefix and randomly generated string
+TEST_DIR_PREFIX="vvv_"

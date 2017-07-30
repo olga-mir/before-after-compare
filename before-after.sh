@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 . config.sh
 
@@ -22,6 +23,9 @@ while [[ $# -gt 0 ]]; do
     -r|--report)
       REPORT=1
       ;;
+    -c|--clean)
+      clean_all_test_dirs
+      ;;
     -h|--help)
       show_help
       ;;
@@ -32,7 +36,23 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
+if [[ $SETUP -eq 1 ]]; then
+  setup
+fi
+
 } # end fictious 'main', trick that allows to simulate effect of 'forward function definition'
+
+setup() {
+  R=`date +%s | shasum | base64 | head -c 10 | tr "[:upper:]" "[:lower:]"`
+  TEST_ROOT_DIR=$TEST_DIR_PREFIX$R
+  mkdir $TEST_ROOT_DIR
+  echo DONE: Created test directory: $TEST_ROOT_DIR
+}
+
+clean_all_test_dirs() {
+  find . -type d -name "vvv_*" -exec rm -rf {} +
+  echo DONE: Removed all test directories
+}
 
 show_help() {
   echo "MANUAL MODE"
