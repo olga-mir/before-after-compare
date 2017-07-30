@@ -46,7 +46,6 @@ CURR_TEST_DIR=""
 
 if [[ $SETUP -eq 1 ]]; then
   setup
-  exit
 fi
 
 if [ -n "$LABEL" ]; then
@@ -57,7 +56,7 @@ fi
 
 if [ -n "$BRANCH2" ]; then
   # brnach to branch comparision
-  set_test_root_dir
+  setup
   echo "\n"Running on branch $BRANCH1
   LABEL=$BRANCH1
   #git checkout $BRANCH1
@@ -67,11 +66,31 @@ if [ -n "$BRANCH2" ]; then
   LABEL=$BRANCH2
   #git checkout $BRANCH2
   run_step
-  #report
+  report
+  exit
+fi
+
+if [ -n "$REPORT" ]; then
+  report
   exit
 fi
 
 } # end fictitious 'main', trick that allows to simulate effect of 'forward function definition'
+
+
+report() {
+  set_test_root_dir
+  orig=$CURR_TEST_DIR/$ORIG
+  proc=$CURR_TEST_DIR/$PROC
+  mkdir -p $proc
+  cp -r $orig/ $proc
+  dirs=($(ls -d $proc/*))
+  [[ ${#dirs[@]} -ne 2 ]] && echo Error && exit
+  eval $PREPARE_FOR_COMPARE_CMD ${dirs[0]}
+  eval $PREPARE_FOR_COMPARE_CMD ${dirs[1]}
+  diff -r ${dirs[0]} ${dirs[1]} > $CURR_TEST_DIR/res.diff
+  # TODO - echo not printing here, even though res.diff is created
+}
 
 setup() {
   R=`date +%s | shasum | base64 | head -c 10 | tr "[:upper:]" "[:lower:]"`

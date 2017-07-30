@@ -2,4 +2,4 @@
 
 # Remove all dynamic data such as timestamps from your output data
 
-echo Done parsing
+echo parsing $1
