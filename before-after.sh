@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 . config.sh
@@ -19,6 +19,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     -m|--master)
       BRANCH1=$2; shift
+      BRANCH2="master"
       ;;
     -l|--label)
       LABEL=$2; shift
@@ -57,14 +58,15 @@ fi
 if [ -n "$BRANCH2" ]; then
   # brnach to branch comparision
   setup
-  echo "\n"Running on branch $BRANCH1
+  echo Running on branch $BRANCH1
+  eval $CLEANUP_CMD
   LABEL=$BRANCH1
-  #git checkout $BRANCH1
+  git checkout $BRANCH1
   run_step
   eval $CLEANUP_CMD
-  echo "\n"Running on branch $BRANCH2
+  echo Running on branch $BRANCH2
   LABEL=$BRANCH2
-  #git checkout $BRANCH2
+  git checkout $BRANCH2
   run_step
   report
   exit
@@ -123,10 +125,11 @@ run_step() {
   fi
 
   echo Running the project
+  safe_folder_name=`echo $LABEL | tr '/' '-'`
   eval $RUN_CMD
   mkdir -p $CURR_TEST_DIR/$ORIG
-  mkdir -p $CURR_TEST_DIR/$ORIG/$LABEL
-  orig_data_dir=$CURR_TEST_DIR/$ORIG/$LABEL
+  mkdir -p $CURR_TEST_DIR/$ORIG/$safe_folder_name
+  orig_data_dir=$CURR_TEST_DIR/$ORIG/$safe_folder_name
   cp -r $DATA_OUTPUT_LOCATION $orig_data_dir
   echo DONE: data copied to $orig_data_dir
 }
